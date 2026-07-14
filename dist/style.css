@@ -99,6 +99,7 @@ canvas {
   background: #f2e9d6;
   border-radius: 3px;
 }
+.loading[hidden] { display: none; }   /* honor the hidden attribute over display:flex */
 .kick-anim { width: min(78%, 360px); height: auto; }
 .loadmsg {
   font-family: Georgia, "Times New Roman", serif;
