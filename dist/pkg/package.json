@@ -1,0 +1,17 @@
+{
+  "name": "ryleigh_banff",
+  "type": "module",
+  "description": "A generative Rocky Mountain birthday keepsake for Ryleigh — rendered in Rust, compiled to WebAssembly.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "ryleigh_banff_bg.wasm",
+    "ryleigh_banff.js",
+    "ryleigh_banff.d.ts"
+  ],
+  "main": "ryleigh_banff.js",
+  "types": "ryleigh_banff.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Happy Birthday, Ryleigh 🏔️</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🏔️</text></svg>">
+</head>
+<body>
+  <main class="card">
+    <div class="frame">
+      <canvas id="scene" width="900" height="600" aria-label="A generative oil-painted Rocky Mountain scene"></canvas>
+      <div class="overlay">
+        <p class="eyebrow">A little something for your Banff weekend</p>
+        <h1>Happy Birthday,<br><span>Ryleigh</span></h1>
+      </div>
+      <div id="loading" class="loading">painting your mountain…</div>
+    </div>
+
+    <p id="msg" class="msg">&nbsp;</p>
+
+    <div class="controls">
+      <button id="new" class="primary">🏔️ Grow a new mountain</button>
+      <button id="save">💾 Save keepsake</button>
+      <button id="kick" class="secret" title="you know why">🥋</button>
+    </div>
+
+    <p class="credit">Painted pixel-by-pixel with <strong>🦀 Rust</strong> &amp; WebAssembly · made just for you</p>
+
+    <p id="err" class="err" hidden>
+      This gift needs to be opened from a web address (not a file on disk).
+      Host the folder for free on Netlify or GitHub Pages, or run a local server —
+      see the README.
+    </p>
+  </main>
+
+  <script type="module">
+    import init, { render } from './pkg/ryleigh_banff.js';
+
+    const canvas  = document.getElementById('scene');
+    const ctx     = canvas.getContext('2d');
+    const msgEl   = document.getElementById('msg');
+    const errEl   = document.getElementById('err');
+    const loading = document.getElementById('loading');
+
+    const messages = [
+      'A one-of-a-kind mountain, grown just for your birthday.',
+      'Happy birthday — now go be in the mountains. 🏔️',
+      'Another peak, because one is never quite enough.',
+      'May this year be as big as these mountains.',
+      'Pine, cold air, and a whole lot of possibility.',
+      'Freshly painted, just for you.',
+      'No two alike — a bit like you, then.',
+    ];
+    const kickMessage = 'May your kicks stay high and the old guys stay roundhoused. 🥋';
+
+    let seed = rnd();
+    let kick = false;
+    let W = 900, H = 600;
+
+    function rnd() { return (Math.random() * 0xffffffff) >>> 0; }
+
+    function sizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr  = Math.min(window.devicePixelRatio || 1, 2);
+      const cssW = Math.max(280, Math.min(rect.width, 900));
+      const cssH = Math.round(cssW * 2 / 3);
+      canvas.style.width  = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      W = Math.min(Math.round(cssW * dpr), 1200);
+      H = Math.round(W * 2 / 3);
+      canvas.width  = W;
+      canvas.height = H;
+    }
+
+    function paint() {
+      const bytes = render(W, H, seed, kick);
+      const img = new ImageData(new Uint8ClampedArray(bytes), W, H);
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function randomMessage() {
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function newMountain() {
+      seed = rnd();
+      kick = false;
+      paint();
+      msgEl.textContent = randomMessage();
+    }
+
+    function toggleKick() {
+      kick = !kick;
+      paint();
+      msgEl.textContent = kick ? kickMessage : randomMessage();
+    }
+
+    function save() {
+      canvas.toBlob((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ryleigh-banff-birthday.png';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, 'image/png');
+    }
+
+    document.getElementById('new').addEventListener('click', newMountain);
+    document.getElementById('kick').addEventListener('click', toggleKick);
+    document.getElementById('save').addEventListener('click', save);
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { sizeCanvas(); paint(); }, 150);
+    });
+
+    init()
+      .then(() => {
+        sizeCanvas();
+        paint();
+        msgEl.textContent = messages[0];
+        loading.hidden = true;
+      })
+      .catch((e) => {
+        console.error(e);
+        loading.hidden = true;
+        errEl.hidden = false;
+      });
+  </script>
+</body>
+</html>
