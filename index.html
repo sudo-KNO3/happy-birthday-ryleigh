@@ -176,11 +176,6 @@
       <button id="save">💾 Save keepsake</button>
     </div>
 
-    <p class="credit">
-      Painted in your browser with <strong>🦀 Rust</strong> &amp; WebAssembly · refresh for a different Alberta wonder<br>
-      <span class="fine">photos: public domain / CC0 (Wikimedia Commons) · made just for you</span>
-    </p>
-
     <p id="err" class="err" hidden>
       This gift needs to be opened from a web address (not a file on disk).
       It's already live — just open the link, or see the README to host it.
@@ -268,14 +263,10 @@
 
     placeEl.textContent = '📍 ' + chosen.name;
 
-    const MIN_LOADING_MS = 3000;   // let the roundhouse play out before the reveal
-    const startedAt = performance.now();
-
+    // Loader shows only while the page actually loads: init WASM, fetch the
+    // photo, paint it — then hide the instant the keepsake is ready.
     Promise.all([init(), loadPhoto(chosen.src)])
-      .then(() => {
-        const wait = Math.max(0, MIN_LOADING_MS - (performance.now() - startedAt));
-        setTimeout(() => { loading.hidden = true; draw(); }, wait);
-      })
+      .then(() => { draw(); loading.hidden = true; })
       .catch((e) => { console.error(e); loading.hidden = true; errEl.hidden = false; });
   </script>
 </body>
