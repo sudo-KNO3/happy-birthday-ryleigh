@@ -16,58 +16,155 @@
         <h1>Happy Birthday,<br><span>Ryleigh</span></h1>
       </div>
       <div id="loading" class="loading">
-        <svg class="kick-anim" viewBox="0 0 300 210" role="img" aria-label="A birthday roundhouse in progress">
-          <ellipse cx="110" cy="188" rx="34" ry="6" fill="rgba(0,0,0,0.12)"></ellipse>
-          <ellipse cx="192" cy="188" rx="26" ry="5" fill="rgba(0,0,0,0.12)"></ellipse>
+        <svg class="kick-anim" viewBox="0 0 360 240" role="img" aria-label="A birthday roundhouse in progress">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbeed4"/>
+      <stop offset="0.60" stop-color="#f6e2c0"/>
+      <stop offset="1" stop-color="#e9cd9c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.36" cy="0.52" r="0.55">
+      <stop offset="0" stop-color="#fff7e6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#fff7e6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
 
-          <!-- old man, recoiling on impact -->
-          <g transform="translate(195,185)" stroke="#26333d" stroke-width="5" stroke-linecap="round" fill="none">
-            <animateTransform attributeName="transform" type="translate" additive="sum"
-              values="0 0;0 0;14 -5;20 -9;6 -2;0 0" keyTimes="0;0.46;0.55;0.66;0.82;1"
-              dur="1.3s" repeatCount="indefinite"></animateTransform>
-            <line x1="4" y1="-46" x2="-4" y2="0"></line>
-            <line x1="4" y1="-46" x2="10" y2="0"></line>
-            <line x1="4" y1="-46" x2="-6" y2="-74"></line>
-            <line x1="-6" y1="-72" x2="-20" y2="-84"></line>
-            <line x1="12" y1="0" x2="20" y2="-42"></line>
-            <circle cx="-10" cy="-86" r="12" fill="#26333d" stroke="none"></circle>
-            <line x1="-22" y1="-93" x2="2" y2="-93"></line>
-            <circle cx="-10" cy="-100" r="7" fill="#26333d" stroke="none"></circle>
-          </g>
+  <g id="stage">
+    <animateTransform attributeName="transform" type="translate" additive="sum"
+      values="0 0;0 0;2 -2;-3 1;2 -1;0 0;0 0" keyTimes="0;0.46;0.50;0.54;0.58;0.64;1"
+      dur="1.6s" repeatCount="indefinite"/>
+    <rect x="-6" y="-6" width="372" height="252" fill="url(#sky)"/>
+    <rect x="-6" y="-6" width="372" height="252" fill="url(#glow)"/>
+    <rect x="-6" y="196" width="372" height="50" fill="#8a5a2b" opacity="0.10"/>
+    <line x1="-6" y1="196" x2="366" y2="196" stroke="#b98a4e" stroke-width="1.5" opacity="0.35"/>
+    <ellipse cx="112" cy="209" rx="40" ry="7" fill="rgba(0,0,0,0.13)"/>
+    <ellipse cx="222" cy="209" rx="30" ry="6" fill="rgba(0,0,0,0.13)"/>
 
-          <!-- impact star -->
-          <g transform="translate(165,96)">
-            <polygon points="18,0 6.47,2.68 12.73,12.73 2.68,6.47 0,18 -2.68,6.47 -12.73,12.73 -6.47,2.68 -18,0 -6.47,-2.68 -12.73,-12.73 -2.68,-6.47 0,-18 2.68,-6.47 12.73,-12.73 6.47,-2.68"
-              fill="#f2b705" stroke="#a9722f" stroke-width="1.5" stroke-linejoin="round"></polygon>
-            <animate attributeName="opacity" values="0;0;1;0.9;0;0" keyTimes="0;0.47;0.52;0.6;0.7;1"
-              dur="1.3s" repeatCount="indefinite"></animate>
-          </g>
+    <!-- ===== OLD MAN (recoils + tumbles) ===== -->
+    <g id="oldman">
+      <animateTransform attributeName="transform" type="translate" additive="sum"
+        values="0 0;0 0;16 -6;30 -12;34 -8;8 -2;0 0" keyTimes="0;0.44;0.52;0.62;0.74;0.90;1"
+        dur="1.6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="rotate" additive="sum"
+        values="0 218 190;0 218 190;8 218 190;20 218 190;14 218 190;3 218 190;0 218 190"
+        keyTimes="0;0.44;0.52;0.62;0.74;0.90;1" dur="1.6s" repeatCount="indefinite"/>
+      <path d="M231,152 Q225,149 227,156" fill="none" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round"/>
+      <path d="M231,152 L241,206" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round"/>
+      <path d="M212,193 L210,206" stroke="#2a2f37" stroke-width="14" stroke-linecap="round"/>
+      <path d="M224,193 L226,206" stroke="#2a2f37" stroke-width="14" stroke-linecap="round"/>
+      <path d="M212,193 L210,206" stroke="#333a42" stroke-width="10" stroke-linecap="round"/>
+      <path d="M224,193 L226,206" stroke="#333a42" stroke-width="10" stroke-linecap="round"/>
+      <ellipse cx="208" cy="206" rx="8" ry="4" fill="#2a2f37"/>
+      <ellipse cx="228" cy="206" rx="8" ry="4" fill="#2a2f37"/>
+      <path d="M209,150 Q206,150 205,157 L201,192 Q200,197 205,197 L233,197 Q238,197 237,192 L233,157 Q232,150 229,150 Z" fill="#5c6673" stroke="#2a2f37" stroke-width="2"/>
+      <path d="M213,156 L203,137" stroke="#2a2f37" stroke-width="13" stroke-linecap="round"/>
+      <path d="M213,156 L203,137" stroke="#5c6673" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="202" cy="136" r="5" fill="#e3b78f" stroke="#2a2f37" stroke-width="1.5"/>
+      <circle cx="216" cy="133" r="15" fill="#e3b78f" stroke="#2a2f37" stroke-width="2"/>
+      <circle cx="211" cy="133" r="1.7" fill="#2a2f37"/>
+      <circle cx="220" cy="132" r="1.7" fill="#2a2f37"/>
+      <circle cx="216" cy="137" r="2.2" fill="#c99a72"/>
+      <path d="M210,142 Q216,138 223,142" fill="none" stroke="#2a2f37" stroke-width="1.8"/>
+      <path d="M209,139 Q216,143 224,139" fill="none" stroke="#d7d2c8" stroke-width="3" stroke-linecap="round"/>
+      <path d="M200,127 Q216,114 232,127 Q232,131 216,131 Q200,131 200,127 Z" fill="#3a4350" stroke="#2a2f37" stroke-width="1.5"/>
+      <path d="M197,128 Q206,133 214,130 L214,133 Q204,135 197,131 Z" fill="#3a4350" stroke="#2a2f37" stroke-width="1"/>
+    </g>
 
-          <!-- Ryleigh, delivering the roundhouse -->
-          <g transform="translate(110,185)" stroke="#26333d" stroke-width="6" stroke-linecap="round" fill="none">
-            <line x1="0" y1="-58" x2="0" y2="0"></line>
-            <line x1="0" y1="-58" x2="-2" y2="-98"></line>
-            <line x1="-2" y1="-98" x2="-2" y2="-106"></line>
-            <line x1="-2" y1="-96" x2="-22" y2="-84"></line>
-            <line x1="-2" y1="-96" x2="16" y2="-90"></line>
-            <g stroke-width="7">
-              <animateTransform attributeName="transform" type="rotate"
-                values="30 0 -58;35 0 -58;-58 0 -58;-50 0 -58;30 0 -58" keyTimes="0;0.34;0.5;0.62;1"
-                dur="1.3s" repeatCount="indefinite"></animateTransform>
-              <line x1="0" y1="-58" x2="30" y2="-52"></line>
-              <line x1="30" y1="-52" x2="58" y2="-58"></line>
-            </g>
-            <!-- head: her face, mirrored at the apex to sell the spin -->
-            <g transform="translate(-2,-126)">
-              <animateTransform attributeName="transform" type="scale" additive="sum"
-                values="1 1;1 1;-1 1;-1 1;1 1" keyTimes="0;0.34;0.5;0.72;1"
-                dur="1.3s" repeatCount="indefinite"></animateTransform>
-              <circle r="22" fill="#26333d" stroke="none"></circle>
-              <image href="./img/face.png" x="-20" y="-20" width="40" height="40"></image>
-            </g>
-          </g>
-        </svg>
-        <p class="loadmsg">🥋 warming up the paint…</p>
+    <!-- ===== RYLEIGH (karate) ===== -->
+    <!-- standing leg -->
+    <path d="M111,150 L108,205" stroke="#2a2f37" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <path d="M111,150 L108,205" stroke="#f7f3ea" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <ellipse cx="107" cy="205" rx="11" ry="6" fill="#2a2f37"/>
+    <ellipse cx="105" cy="204" rx="7" ry="3.5" fill="#f7f3ea"/>
+    <!-- balance arm (back) -->
+    <path d="M112,120 L90,150" stroke="#2a2f37" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <path d="M112,120 L90,150" stroke="#f7f3ea" stroke-width="11" fill="none" stroke-linecap="round"/>
+    <circle cx="89" cy="151" r="7" fill="#f7f3ea" stroke="#2a2f37" stroke-width="2"/>
+    <!-- torso (gi) -->
+    <path d="M116,150 L112,110" stroke="#2a2f37" stroke-width="34" fill="none" stroke-linecap="round"/>
+    <path d="M116,150 L112,110" stroke="#f7f3ea" stroke-width="29" fill="none" stroke-linecap="round"/>
+    <path d="M112,114 L106,148 M112,114 L118,148" stroke="#2a2f37" stroke-width="2.4" fill="none"/>
+    <!-- belt -->
+    <path d="M100,151 L132,150" stroke="#2a2f37" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M100,151 L132,150" stroke="#c9a24b" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M114,156 L111,170 M120,156 L123,170" stroke="#c9a24b" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <rect x="110" y="145" width="10" height="11" rx="2.5" fill="#c9a24b" stroke="#2a2f37" stroke-width="1.6"/>
+    <!-- ponytail (behind head) -->
+    <g id="pony">
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 100 86; -9 100 86; 11 100 86; 0 100 86" keyTimes="0;0.46;0.55;1"
+        dur="1.6s" repeatCount="indefinite"/>
+      <path d="M100,82 C82,72 71,86 77,105 C83,112 94,99 100,88 Z" fill="#b98a4e" stroke="#2a2f37" stroke-width="1.5"/>
+    </g>
+    <!-- neck -->
+    <path d="M112,116 L112,122" stroke="#2a2f37" stroke-width="15" stroke-linecap="round"/>
+    <path d="M112,116 L112,122" stroke="#f7f3ea" stroke-width="11" stroke-linecap="round"/>
+
+    <!-- swoosh trail -->
+    <path d="M165,195 A64,64 0 0 0 133,87" fill="none" stroke="#ffffff" stroke-width="11"
+      stroke-linecap="round" opacity="0" stroke-dasharray="185" stroke-dashoffset="185">
+      <animate attributeName="stroke-dashoffset" values="185;185;0;0" keyTimes="0;0.30;0.50;1" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0;0.7;0.45;0;0" keyTimes="0;0.32;0.50;0.60;0.72;1" dur="1.6s" repeatCount="indefinite"/>
+    </path>
+    <!-- speed lines -->
+    <g stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;0;0.6;0;0" keyTimes="0;0.42;0.50;0.60;1" dur="1.6s" repeatCount="indefinite"/>
+      <line x1="150" y1="136" x2="130" y2="132"/>
+      <line x1="156" y1="150" x2="134" y2="150"/>
+      <line x1="150" y1="164" x2="130" y2="168"/>
+    </g>
+
+    <!-- kicking leg -->
+    <g stroke-linecap="round">
+      <animateTransform attributeName="transform" type="rotate"
+        values="42 120 150; 58 120 150; -68 120 150; -80 120 150; 42 120 150"
+        keyTimes="0;0.28;0.46;0.54;1" calcMode="spline"
+        keySplines="0.3 0 0.7 0.2; 0.9 0 1 0.55; 0.2 0.7 0.4 1; 0.45 0 0.55 1"
+        dur="1.6s" repeatCount="indefinite"/>
+      <path d="M120,150 L153,150" stroke="#2a2f37" stroke-width="19" fill="none"/>
+      <path d="M153,150 L184,150" stroke="#2a2f37" stroke-width="17" fill="none"/>
+      <path d="M120,150 L153,150" stroke="#f7f3ea" stroke-width="14" fill="none"/>
+      <path d="M153,150 L184,150" stroke="#f7f3ea" stroke-width="12" fill="none"/>
+      <path d="M181,141 L201,150 L181,159 Z" fill="#2a2f37" stroke="#2a2f37" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+
+    <!-- head (face), mirror-flips at the apex -->
+    <g id="head" transform="translate(112,90)">
+      <animateTransform attributeName="transform" type="scale" additive="sum"
+        values="1 1;1 1;-1 1;-1 1;1 1" keyTimes="0;0.30;0.46;0.72;1" dur="1.6s" repeatCount="indefinite"/>
+      <circle r="22.5" fill="#2a2f37"/>
+      <image href="./img/face.png" x="-20" y="-20" width="40" height="40"/>
+      <path d="M-18,-8 L17,-9" stroke="#d6483b" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M-18,-8 L-27,-13 M-18,-4 L-26,0" stroke="#d6483b" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- guard arm (front, over head) -->
+    <path d="M117,120 L128,99" stroke="#2a2f37" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <path d="M117,120 L128,99" stroke="#f7f3ea" stroke-width="11" fill="none" stroke-linecap="round"/>
+    <circle cx="129" cy="98" r="7" fill="#f7f3ea" stroke="#2a2f37" stroke-width="2"/>
+
+    <!-- impact burst -->
+    <g id="burst" transform="translate(199,150)" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;0.9;0;0" keyTimes="0;0.46;0.52;0.62;0.72;1" dur="1.6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" additive="sum"
+        values="0.4;0.4;1.2;1;0.7" keyTimes="0;0.46;0.54;0.62;0.72" dur="1.6s" repeatCount="indefinite"/>
+      <polygon points="22,0 7.9,3.27 15.56,15.56 3.27,7.9 0,22 -3.27,7.9 -15.56,15.56 -7.9,3.27 -22,0 -7.9,-3.27 -15.56,-15.56 -3.27,-7.9 0,-22 3.27,-7.9 15.56,-15.56 7.9,-3.27" fill="#ffc21f" stroke="#a9822f" stroke-width="2" stroke-linejoin="round"/>
+      <circle r="8" fill="#fff6d5"/>
+    </g>
+
+    <!-- stars orbiting the old man's head -->
+    <g id="orbit" transform="translate(240,110)" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;1;1;0" keyTimes="0;0.50;0.58;0.64;0.90;1" dur="1.6s" repeatCount="indefinite"/>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="1.6s" repeatCount="indefinite"/>
+        <g transform="translate(17,0)"><polygon points="5,0 1.4,1.4 0,5 -1.4,1.4 -5,0 -1.4,-1.4 0,-5 1.4,-1.4" fill="#ffc21f"/></g>
+        <g transform="translate(-14,7)"><polygon points="5,0 1.4,1.4 0,5 -1.4,1.4 -5,0 -1.4,-1.4 0,-5 1.4,-1.4" fill="#ffc21f"/></g>
+        <g transform="translate(3,-16)"><polygon points="5,0 1.4,1.4 0,5 -1.4,1.4 -5,0 -1.4,-1.4 0,-5 1.4,-1.4" fill="#ffc21f"/></g>
+      </g>
+    </g>
+  </g>
+</svg>
+        <p class="loadmsg">🥋 sizing up an old guy…</p>
       </div>
     </div>
 
