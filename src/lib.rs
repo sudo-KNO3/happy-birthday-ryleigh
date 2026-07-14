@@ -474,6 +474,26 @@ pub fn oil_paint(bytes: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
     out
 }
 
+/// Oil-paint a photo and, if `kick` is set, drop the birthday roundhouse cameo
+/// into the foreground. Used by the site to turn the Banff photo into a
+/// painterly keepsake with the inside joke on tap.
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn stylize(bytes: Vec<u8>, width: u32, height: u32, kick: bool) -> Vec<u8> {
+    let w = width as usize;
+    let h = height as usize;
+    if bytes.len() != w * h * 4 {
+        return bytes;
+    }
+    let mut out = oil_filter(&bytes, w, h, oil_radius(w, h));
+    apply_canvas_texture(&mut out, w, h);
+    if kick {
+        let mut c = Canvas { buf: &mut out, w, h };
+        draw_kick(&mut c, w, h);
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

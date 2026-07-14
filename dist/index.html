@@ -10,125 +10,117 @@
 <body>
   <main class="card">
     <div class="frame">
-      <canvas id="scene" width="900" height="600" aria-label="A generative oil-painted Rocky Mountain scene"></canvas>
+      <canvas id="scene" width="1280" height="960" aria-label="An oil-painted view of a famous Alberta sight"></canvas>
       <div class="overlay">
         <p class="eyebrow">A little something for your Banff weekend</p>
         <h1>Happy Birthday,<br><span>Ryleigh</span></h1>
       </div>
-      <div id="loading" class="loading">painting your mountain…</div>
+      <div id="loading" class="loading">painting your keepsake…</div>
     </div>
 
+    <p id="place" class="place">&nbsp;</p>
     <p id="msg" class="msg">&nbsp;</p>
 
     <div class="controls">
-      <button id="new" class="primary">🏔️ Grow a new mountain</button>
+      <button id="toggle" class="primary">🎨 See the photo</button>
       <button id="save">💾 Save keepsake</button>
-      <button id="kick" class="secret" title="you know why">🥋</button>
     </div>
 
-    <p class="credit">Painted pixel-by-pixel with <strong>🦀 Rust</strong> &amp; WebAssembly · made just for you</p>
+    <p class="credit">
+      Painted in your browser with <strong>🦀 Rust</strong> &amp; WebAssembly · refresh for a different Alberta wonder<br>
+      <span class="fine">photos: public domain / CC0 (Wikimedia Commons) · made just for you</span>
+    </p>
 
     <p id="err" class="err" hidden>
       This gift needs to be opened from a web address (not a file on disk).
-      Host the folder for free on Netlify or GitHub Pages, or run a local server —
-      see the README.
+      It's already live — just open the link, or see the README to host it.
     </p>
   </main>
 
   <script type="module">
-    import init, { render } from './pkg/ryleigh_banff.js';
+    import init, { stylize } from './pkg/ryleigh_banff.js';
 
-    const canvas  = document.getElementById('scene');
-    const ctx     = canvas.getContext('2d');
-    const msgEl   = document.getElementById('msg');
-    const errEl   = document.getElementById('err');
-    const loading = document.getElementById('loading');
-
-    const messages = [
-      'A one-of-a-kind mountain, grown just for your birthday.',
-      'Happy birthday — now go be in the mountains. 🏔️',
-      'Another peak, because one is never quite enough.',
-      'May this year be as big as these mountains.',
-      'Pine, cold air, and a whole lot of possibility.',
-      'Freshly painted, just for you.',
-      'No two alike — a bit like you, then.',
+    // Famous Alberta sights — all public domain / CC0 (Wikimedia Commons).
+    const IMAGES = [
+      { src: './img/moraine.jpg', name: 'Moraine Lake, Banff' },
+      { src: './img/louise.jpg',  name: 'Lake Louise, Banff' },
+      { src: './img/peyto.jpg',   name: 'Peyto Lake, Banff' },
+      { src: './img/hoodoos.jpg', name: 'Hoodoos, Drumheller Badlands' },
+      { src: './img/rundle.jpg',  name: 'Vermilion Lakes & Mount Rundle, Banff' },
     ];
-    const kickMessage = 'May your kicks stay high and the old guys stay roundhoused. 🥋';
+    const chosen = IMAGES[Math.floor(Math.random() * IMAGES.length)];
 
-    let seed = rnd();
-    let kick = false;
-    let W = 900, H = 600;
+    const canvas    = document.getElementById('scene');
+    const ctx       = canvas.getContext('2d');
+    const msgEl     = document.getElementById('msg');
+    const placeEl   = document.getElementById('place');
+    const errEl     = document.getElementById('err');
+    const loading   = document.getElementById('loading');
+    const toggleBtn = document.getElementById('toggle');
 
-    function rnd() { return (Math.random() * 0xffffffff) >>> 0; }
+    const MAX_W = 1280;
+    const paintedMsg = 'Hand-painted for your birthday — refresh for a different Alberta wonder. 🏔️';
+    const photoMsg   = 'The real thing. Go see mountains like these. 💙';
 
-    function sizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const dpr  = Math.min(window.devicePixelRatio || 1, 2);
-      const cssW = Math.max(280, Math.min(rect.width, 900));
-      const cssH = Math.round(cssW * 2 / 3);
-      canvas.style.width  = cssW + 'px';
-      canvas.style.height = cssH + 'px';
-      W = Math.min(Math.round(cssW * dpr), 1200);
-      H = Math.round(W * 2 / 3);
-      canvas.width  = W;
-      canvas.height = H;
+    let W = 1280, H = 960;
+    let base = null;       // original photo pixels (Uint8Array RGBA)
+    let painted = true;    // painting vs. photo
+    let cachePaint = null;
+
+    function show(bytes) {
+      ctx.putImageData(new ImageData(new Uint8ClampedArray(bytes), W, H), 0, 0);
     }
 
-    function paint() {
-      const bytes = render(W, H, seed, kick);
-      const img = new ImageData(new Uint8ClampedArray(bytes), W, H);
-      ctx.putImageData(img, 0, 0);
+    function draw() {
+      if (!base) return;
+      if (painted) {
+        if (!cachePaint) cachePaint = stylize(new Uint8Array(base), W, H, false);
+        show(cachePaint);
+        msgEl.textContent = paintedMsg;
+      } else {
+        show(base);
+        msgEl.textContent = photoMsg;
+      }
+      toggleBtn.textContent = painted ? '🎨 See the photo' : '🎨 See the painting';
     }
 
-    function randomMessage() {
-      return messages[Math.floor(Math.random() * messages.length)];
-    }
-
-    function newMountain() {
-      seed = rnd();
-      kick = false;
-      paint();
-      msgEl.textContent = randomMessage();
-    }
-
-    function toggleKick() {
-      kick = !kick;
-      paint();
-      msgEl.textContent = kick ? kickMessage : randomMessage();
-    }
-
-    function save() {
+    toggleBtn.addEventListener('click', () => { painted = !painted; draw(); });
+    document.getElementById('save').addEventListener('click', () => {
       canvas.toBlob((blob) => {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'ryleigh-banff-birthday.png';
+        a.download = 'ryleigh-alberta-' + (painted ? 'painting' : 'photo') + '.png';
         a.click();
         URL.revokeObjectURL(a.href);
       }, 'image/png');
-    }
-
-    document.getElementById('new').addEventListener('click', newMountain);
-    document.getElementById('kick').addEventListener('click', toggleKick);
-    document.getElementById('save').addEventListener('click', save);
-
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { sizeCanvas(); paint(); }, 150);
     });
 
-    init()
-      .then(() => {
-        sizeCanvas();
-        paint();
-        msgEl.textContent = messages[0];
-        loading.hidden = true;
-      })
-      .catch((e) => {
-        console.error(e);
-        loading.hidden = true;
-        errEl.hidden = false;
+    function loadPhoto(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, MAX_W / img.naturalWidth);
+          W = Math.round(img.naturalWidth * scale);
+          H = Math.round(img.naturalHeight * scale);
+          canvas.width = W;
+          canvas.height = H;
+          const off = document.createElement('canvas');
+          off.width = W; off.height = H;
+          const octx = off.getContext('2d');
+          octx.drawImage(img, 0, 0, W, H);
+          base = new Uint8Array(octx.getImageData(0, 0, W, H).data);
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = src;
       });
+    }
+
+    placeEl.textContent = '📍 ' + chosen.name;
+
+    Promise.all([init(), loadPhoto(chosen.src)])
+      .then(() => { loading.hidden = true; draw(); })
+      .catch((e) => { console.error(e); loading.hidden = true; errEl.hidden = false; });
   </script>
 </body>
 </html>
