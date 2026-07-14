@@ -100,7 +100,67 @@ canvas {
   border-radius: 3px;
 }
 .loading[hidden] { display: none; }   /* honor the hidden attribute over display:flex */
-.kick-anim { width: min(78%, 360px); height: auto; }
+.kick-anim { width: 100%; height: auto; display: block; }
+
+/* ---- scene flow: roundhouse -> greeting -> painting ---- */
+.scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+.scene[hidden] { display: none; }
+
+.round-card {
+  width: min(94%, 470px);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.ghost {
+  background: transparent;
+  border: 0;
+  color: rgba(230, 221, 200, 0.55);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+}
+.ghost:hover { color: var(--cream); background: transparent; transform: none; }
+
+.greet { text-align: center; max-width: 520px; padding: 8px 12px; }
+.greet .eyebrow {
+  color: var(--gold);
+  text-shadow: none;
+  margin-bottom: 10px;
+}
+.greet h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  line-height: 1.02;
+  font-size: clamp(30px, 7.4vw, 54px);
+  color: #fff;
+  margin: 0;
+}
+.greet h1 span { color: var(--gold); font-style: italic; }
+.greet-msg {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(15px, 2.7vw, 18px);
+  line-height: 1.6;
+  color: #e8ddc8;
+  margin: 16px auto 24px;
+}
+.big { font-size: 16px; padding: 14px 26px; }
+
+.paint-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  color: #f1e7d1;
+  font-size: clamp(18px, 3.6vw, 24px);
+  margin: 0 0 2px;
+}
 .loadmsg {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
