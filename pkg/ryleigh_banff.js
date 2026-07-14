@@ -34,6 +34,25 @@ export function render(width, height, seed, kick) {
     wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
     return v1;
 }
+
+/**
+ * Oil-paint a photo and, if `kick` is set, drop the birthday roundhouse cameo
+ * into the foreground. Used by the site to turn the Banff photo into a
+ * painterly keepsake with the inside joke on tap.
+ * @param {Uint8Array} bytes
+ * @param {number} width
+ * @param {number} height
+ * @param {boolean} kick
+ * @returns {Uint8Array}
+ */
+export function stylize(bytes, width, height, kick) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.stylize(ptr0, len0, width, height, kick);
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,

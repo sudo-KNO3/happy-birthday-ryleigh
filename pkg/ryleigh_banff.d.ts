@@ -15,12 +15,20 @@ export function oil_paint(bytes: Uint8Array, width: number, height: number): Uin
  */
 export function render(width: number, height: number, seed: number, kick: boolean): Uint8Array;
 
+/**
+ * Oil-paint a photo and, if `kick` is set, drop the birthday roundhouse cameo
+ * into the foreground. Used by the site to turn the Banff photo into a
+ * painterly keepsake with the inside joke on tap.
+ */
+export function stylize(bytes: Uint8Array, width: number, height: number, kick: boolean): Uint8Array;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly oil_paint: (a: number, b: number, c: number, d: number) => [number, number];
     readonly render: (a: number, b: number, c: number, d: number) => [number, number];
+    readonly stylize: (a: number, b: number, c: number, d: number, e: number) => [number, number];
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;

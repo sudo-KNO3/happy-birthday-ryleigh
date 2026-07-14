@@ -102,9 +102,17 @@ canvas {
 }
 
 /* --- caption + controls --- */
+.place {
+  margin: 16px 4px 2px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
 .msg {
   min-height: 1.4em;
-  margin: 18px 4px 20px;
+  margin: 6px 4px 20px;
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
   font-size: clamp(15px, 2.6vw, 18px);
@@ -156,6 +164,7 @@ button.secret:hover { filter: none; box-shadow: 0 0 0 2px rgba(201, 162, 75, 0.5
   color: rgba(230, 221, 200, 0.6);
 }
 .credit strong { color: var(--gold); font-weight: 700; }
+.credit .fine { font-size: 11px; color: rgba(230, 221, 200, 0.45); }
 
 .err {
   margin: 16px auto 0;
