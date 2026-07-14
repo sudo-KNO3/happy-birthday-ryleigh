@@ -179,18 +179,18 @@
     <!-- SCENE 3 — the painting -->
     <section id="scene-paint" class="scene" hidden>
       <h2 class="paint-title">Happy Birthday, Schnoz 🎂</h2>
+      <p class="paint-sub">Your own oil-painting machine 🎨 — take or upload <em>any</em> photo and watch it get painted.</p>
       <div class="frame">
-        <canvas id="scene" width="1280" height="960" aria-label="An oil painting of a famous Alberta sight"></canvas>
+        <canvas id="scene" width="1280" height="960" aria-label="An oil painting"></canvas>
       </div>
       <p id="place" class="place">&nbsp;</p>
       <p id="msg" class="msg">&nbsp;</p>
       <div class="controls">
-        <button id="upload" class="primary">📷 Upload a photo</button>
+        <button id="upload" class="primary big">📷 Take or upload a photo</button>
         <input id="file" type="file" accept="image/*" hidden>
-        <button id="toggle">🎨 See the photo</button>
         <button id="save">💾 Download</button>
       </div>
-      <p class="hint">upload your own photo to paint it — it never leaves your device</p>
+      <p class="hint">any photo you take becomes an oil painting · it never leaves your device</p>
       <p id="err" class="err" hidden>
         This gift needs to be opened from a web address (not a file on disk). It's already live — just open the link.
       </p>
@@ -215,41 +215,69 @@
     const msgEl     = document.getElementById('msg');
     const placeEl   = document.getElementById('place');
     const errEl     = document.getElementById('err');
-    const toggleBtn = document.getElementById('toggle');
     const revealBtn = document.getElementById('reveal');
     const uploadBtn = document.getElementById('upload');
     const fileInput = document.getElementById('file');
 
     const MAX_W = 1280;
-    const paintedMsg = 'Painted just for you — refresh for a different Alberta wonder. 🏔️';
-    const photoMsg   = 'The real thing. Go see mountains like these. 💙';
+    const paintedMsg = 'Your oil painting. 🎨 Take or upload another anytime.';
 
     let W = 1280, H = 960;
-    let base = null, painted = true, cachePaint = null;
+    let base = null;                          // original photo pixels (RGBA)
+    const paintCv = document.createElement('canvas');
+    const paintCtx = paintCv.getContext('2d');
+    let animating = false;
 
     function showScene(id) {
       for (const s of document.querySelectorAll('.scene')) s.hidden = (s.id !== id);
     }
-    function show(bytes) {
-      ctx.putImageData(new ImageData(new Uint8ClampedArray(bytes), W, H), 0, 0);
-    }
-    function draw() {
+
+    // Oil-paint the current photo, then reveal it dab-by-dab so it looks painted.
+    function paintReveal() {
       if (!base) return;
-      if (painted) {
-        if (!cachePaint) cachePaint = stylize(new Uint8Array(base), W, H, false);
-        show(cachePaint); msgEl.textContent = paintedMsg;
-      } else {
-        show(base); msgEl.textContent = photoMsg;
+      const bytes = stylize(new Uint8Array(base), W, H, false);
+      paintCv.width = W; paintCv.height = H;
+      paintCtx.putImageData(new ImageData(new Uint8ClampedArray(bytes), W, H), 0, 0);
+      ctx.putImageData(new ImageData(new Uint8ClampedArray(base), W, H), 0, 0);   // start from the photo
+
+      const dabs = [];
+      const N = Math.max(500, Math.round((W * H) / 850));
+      for (let k = 0; k < N; k++) {
+        dabs.push({ x: Math.random() * W, y: Math.random() * H, r: 16 + Math.random() * 22 });
       }
-      toggleBtn.textContent = painted ? '🎨 See the photo' : '🎨 See the painting';
+      const DUR = 2400, start = performance.now();
+      let i = 0;
+      animating = true;
+      msgEl.textContent = '🎨 painting…';
+      uploadBtn.disabled = true;
+      function frame(now) {
+        const t = Math.min(1, (now - start) / DUR);
+        const target = Math.floor(t * dabs.length);
+        for (; i < target; i++) {
+          const d = dabs[i];
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(paintCv, 0, 0);
+          ctx.restore();
+        }
+        if (t < 1) { requestAnimationFrame(frame); }
+        else {
+          ctx.drawImage(paintCv, 0, 0);   // fill any gaps
+          msgEl.textContent = paintedMsg;
+          uploadBtn.disabled = false;
+          animating = false;
+        }
+      }
+      requestAnimationFrame(frame);
     }
 
-    toggleBtn.addEventListener('click', () => { painted = !painted; draw(); });
     document.getElementById('save').addEventListener('click', () => {
       canvas.toBlob((blob) => {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'schnoz-' + (painted ? 'oil-painting' : 'photo') + '.png';
+        a.download = 'schnoz-oil-painting.png';
         a.click(); URL.revokeObjectURL(a.href);
       }, 'image/png');
     });
@@ -264,7 +292,6 @@
       const octx = off.getContext('2d');
       octx.drawImage(img, 0, 0, W, H);
       base = new Uint8Array(octx.getImageData(0, 0, W, H).data);
-      cachePaint = null; painted = true;
     }
     function loadPhoto(src) {
       return new Promise((resolve, reject) => {
@@ -276,13 +303,13 @@
     }
     // Upload your own photo -> oil painting, entirely in the browser.
     function useFile(file) {
-      if (!file || !file.type.startsWith('image/')) return;
+      if (!file || !file.type.startsWith('image/') || animating) return;
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
         setBaseFromImg(img);
         placeEl.textContent = '🖼️ ' + (file.name.split('.').slice(0, -1).join('.') || file.name);
-        draw();
+        paintReveal();
         URL.revokeObjectURL(url);
       };
       img.onerror = () => URL.revokeObjectURL(url);
@@ -306,12 +333,12 @@
     // scene 2 -> 3 (paint on demand)
     revealBtn.addEventListener('click', async () => {
       revealBtn.disabled = true;
-      revealBtn.textContent = 'painting…';
+      revealBtn.textContent = 'warming up…';
       try { await ready; }
       catch (e) { showScene('scene-paint'); errEl.hidden = false; return; }
-      await new Promise((r) => requestAnimationFrame(() => r()));
-      draw();
       showScene('scene-paint');
+      await new Promise((r) => requestAnimationFrame(() => r()));
+      paintReveal();
     });
   </script>
 </body>
