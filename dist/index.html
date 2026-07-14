@@ -9,13 +9,10 @@
 </head>
 <body>
   <main class="card">
-    <div class="frame">
-      <canvas id="scene" width="1280" height="960" aria-label="An oil-painted view of a famous Alberta sight"></canvas>
-      <div class="overlay">
-        <p class="eyebrow">A little something for your Banff weekend</p>
-        <h1>Happy Birthday,<br><span>Ryleigh</span></h1>
-      </div>
-      <div id="loading" class="loading">
+
+    <!-- SCENE 1 — the roundhouse -->
+    <section id="scene-round" class="scene">
+      <div class="round-card">
         <svg class="kick-anim" viewBox="0 0 360 240" role="img" aria-label="A birthday roundhouse in progress">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -164,28 +161,43 @@
     </g>
   </g>
 </svg>
-        <p class="loadmsg">🥋 sizing up an old guy…</p>
       </div>
-    </div>
+      <p class="loadmsg">🥋 a birthday tradition…</p>
+      <button id="skip" class="ghost">skip →</button>
+    </section>
 
-    <p id="place" class="place">&nbsp;</p>
-    <p id="msg" class="msg">&nbsp;</p>
+    <!-- SCENE 2 — the greeting -->
+    <section id="scene-greet" class="scene" hidden>
+      <div class="greet">
+        <p class="eyebrow">Banff · another lap around the sun</p>
+        <h1>Happy Birthday,<br><span>Ryleigh!</span></h1>
+        <p class="greet-msg">Another year of out-hiking everyone, roundhousing unsuspecting old men, and hunting down the bluest water in Alberta. May your peaks be tall, your lakes be freezing, and your kicks stay high. 🥋</p>
+        <button id="reveal" class="primary big">🎨 Reveal your painting</button>
+      </div>
+    </section>
 
-    <div class="controls">
-      <button id="toggle" class="primary">🎨 See the photo</button>
-      <button id="save">💾 Save keepsake</button>
-    </div>
+    <!-- SCENE 3 — the painting -->
+    <section id="scene-paint" class="scene" hidden>
+      <h2 class="paint-title">Happy Birthday, Ryleigh 🎂</h2>
+      <div class="frame">
+        <canvas id="scene" width="1280" height="960" aria-label="An oil painting of a famous Alberta sight"></canvas>
+      </div>
+      <p id="place" class="place">&nbsp;</p>
+      <p id="msg" class="msg">&nbsp;</p>
+      <div class="controls">
+        <button id="toggle" class="primary">🎨 See the photo</button>
+        <button id="save">💾 Save keepsake</button>
+      </div>
+      <p id="err" class="err" hidden>
+        This gift needs to be opened from a web address (not a file on disk). It's already live — just open the link.
+      </p>
+    </section>
 
-    <p id="err" class="err" hidden>
-      This gift needs to be opened from a web address (not a file on disk).
-      It's already live — just open the link, or see the README to host it.
-    </p>
   </main>
 
   <script type="module">
     import init, { stylize } from './pkg/ryleigh_banff.js';
 
-    // Famous Alberta sights — all public domain / CC0 (Wikimedia Commons).
     const IMAGES = [
       { src: './img/moraine.jpg', name: 'Moraine Lake, Banff' },
       { src: './img/louise.jpg',  name: 'Lake Louise, Banff' },
@@ -200,31 +212,29 @@
     const msgEl     = document.getElementById('msg');
     const placeEl   = document.getElementById('place');
     const errEl     = document.getElementById('err');
-    const loading   = document.getElementById('loading');
     const toggleBtn = document.getElementById('toggle');
+    const revealBtn = document.getElementById('reveal');
 
     const MAX_W = 1280;
-    const paintedMsg = 'Hand-painted for your birthday — refresh for a different Alberta wonder. 🏔️';
+    const paintedMsg = 'Painted just for you — refresh for a different Alberta wonder. 🏔️';
     const photoMsg   = 'The real thing. Go see mountains like these. 💙';
 
     let W = 1280, H = 960;
-    let base = null;       // original photo pixels (Uint8Array RGBA)
-    let painted = true;    // painting vs. photo
-    let cachePaint = null;
+    let base = null, painted = true, cachePaint = null;
 
+    function showScene(id) {
+      for (const s of document.querySelectorAll('.scene')) s.hidden = (s.id !== id);
+    }
     function show(bytes) {
       ctx.putImageData(new ImageData(new Uint8ClampedArray(bytes), W, H), 0, 0);
     }
-
     function draw() {
       if (!base) return;
       if (painted) {
         if (!cachePaint) cachePaint = stylize(new Uint8Array(base), W, H, false);
-        show(cachePaint);
-        msgEl.textContent = paintedMsg;
+        show(cachePaint); msgEl.textContent = paintedMsg;
       } else {
-        show(base);
-        msgEl.textContent = photoMsg;
+        show(base); msgEl.textContent = photoMsg;
       }
       toggleBtn.textContent = painted ? '🎨 See the photo' : '🎨 See the painting';
     }
@@ -235,8 +245,7 @@
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'ryleigh-alberta-' + (painted ? 'painting' : 'photo') + '.png';
-        a.click();
-        URL.revokeObjectURL(a.href);
+        a.click(); URL.revokeObjectURL(a.href);
       }, 'image/png');
     });
 
@@ -247,8 +256,7 @@
           const scale = Math.min(1, MAX_W / img.naturalWidth);
           W = Math.round(img.naturalWidth * scale);
           H = Math.round(img.naturalHeight * scale);
-          canvas.width = W;
-          canvas.height = H;
+          canvas.width = W; canvas.height = H;
           const off = document.createElement('canvas');
           off.width = W; off.height = H;
           const octx = off.getContext('2d');
@@ -263,11 +271,26 @@
 
     placeEl.textContent = '📍 ' + chosen.name;
 
-    // Loader shows only while the page actually loads: init WASM, fetch the
-    // photo, paint it — then hide the instant the keepsake is ready.
-    Promise.all([init(), loadPhoto(chosen.src)])
-      .then(() => { draw(); loading.hidden = true; })
-      .catch((e) => { console.error(e); loading.hidden = true; errEl.hidden = false; });
+    // load WASM + photo in the background while the intro plays
+    const ready = Promise.all([init(), loadPhoto(chosen.src)]);
+    ready.catch((e) => console.error(e));
+
+    // scene 1 -> 2 (auto after two kicks, or click/skip)
+    let advanced = false;
+    function toGreeting() { if (advanced) return; advanced = true; showScene('scene-greet'); }
+    document.getElementById('scene-round').addEventListener('click', toGreeting);
+    setTimeout(toGreeting, 3400);
+
+    // scene 2 -> 3 (paint on demand)
+    revealBtn.addEventListener('click', async () => {
+      revealBtn.disabled = true;
+      revealBtn.textContent = 'painting…';
+      try { await ready; }
+      catch (e) { showScene('scene-paint'); errEl.hidden = false; return; }
+      await new Promise((r) => requestAnimationFrame(() => r()));
+      draw();
+      showScene('scene-paint');
+    });
   </script>
 </body>
 </html>

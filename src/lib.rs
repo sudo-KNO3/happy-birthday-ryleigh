@@ -216,8 +216,8 @@ fn apply_canvas_texture(buf: &mut [u8], w: usize, h: usize) {
     for y in 0..h {
         for x in 0..w {
             let i = (y * w + x) * 4;
-            let weave = 0.02 * (((x + y) as f32) * 0.7).sin();
-            let f = (0.93 + 0.09 * tex_noise(x, y) + weave).clamp(0.85, 1.05);
+            let weave = 0.03 * (((x + y) as f32) * 0.7).sin();
+            let f = (0.90 + 0.12 * tex_noise(x, y) + weave).clamp(0.82, 1.06);
             for k in 0..3 {
                 buf[i + k] = (buf[i + k] as f32 * f).clamp(0.0, 255.0) as u8;
             }
@@ -227,6 +227,96 @@ fn apply_canvas_texture(buf: &mut [u8], w: usize, h: usize) {
 
 fn oil_radius(w: usize, h: usize) -> i32 {
     ((w.min(h) / 220).max(2) as i32).min(6)
+}
+
+fn samp(src: &[u8], w: usize, h: usize, x: i32, y: i32) -> (f32, f32, f32) {
+    let x = x.clamp(0, w as i32 - 1) as usize;
+    let y = y.clamp(0, h as i32 - 1) as usize;
+    let i = (y * w + x) * 4;
+    (src[i] as f32, src[i + 1] as f32, src[i + 2] as f32)
+}
+fn samp_lum(src: &[u8], w: usize, h: usize, x: i32, y: i32) -> f32 {
+    let (r, g, b) = samp(src, w, h, x, y);
+    0.299 * r + 0.587 * g + 0.114 * b
+}
+
+/// Overlay short brush strokes that follow the image contours (perpendicular to
+/// the local gradient), so the result reads as hand-painted, not just smoothed.
+fn brush_pass(buf: &mut [u8], w: usize, h: usize, seed: u32) {
+    let src = buf.to_vec();
+    let mut rng = Rng::new(seed);
+    let n = (w * h / 34).max(300);
+    let mut c = Canvas { buf, w, h };
+    for _ in 0..n {
+        let px = rng.range(0.0, w as f32);
+        let py = rng.range(0.0, h as f32);
+        let xi = px as i32;
+        let yi = py as i32;
+        let gx = samp_lum(&src, w, h, xi + 1, yi) - samp_lum(&src, w, h, xi - 1, yi);
+        let gy = samp_lum(&src, w, h, xi, yi + 1) - samp_lum(&src, w, h, xi, yi - 1);
+        let mag = (gx * gx + gy * gy).sqrt();
+        let mut ang = if mag > 6.0 { gy.atan2(gx) + PI * 0.5 } else { rng.range(0.0, PI) };
+        ang += rng.range(-0.22, 0.22);
+        let (sx, sy) = (ang.cos(), ang.sin());
+        let (br, bg, bb) = samp(&src, w, h, xi, yi);
+        let j = rng.range(-0.12, 0.14);
+        let col = (
+            (br * (1.0 + j)).clamp(0.0, 255.0) / 255.0,
+            (bg * (1.0 + j)).clamp(0.0, 255.0) / 255.0,
+            (bb * (1.0 + j)).clamp(0.0, 255.0) / 255.0,
+        );
+        let len = rng.range(5.0, 13.0);
+        let rad = rng.range(1.1, 2.4);
+        let steps = (len / 1.2) as i32;
+        for s in 0..=steps {
+            let t = (s as f32 / steps.max(1) as f32 - 0.5) * len;
+            c.fill_disc(px + sx * t, py + sy * t, rad, col);
+        }
+    }
+}
+
+/// Colour lift (saturation + contrast) and a soft vignette to finish the paint.
+fn tone_and_vignette(buf: &mut [u8], w: usize, h: usize) {
+    let cx = w as f32 / 2.0;
+    let cy = h as f32 / 2.0;
+    let maxd = (cx * cx + cy * cy).sqrt().max(1.0);
+    for y in 0..h {
+        for x in 0..w {
+            let i = (y * w + x) * 4;
+            let mut r = buf[i] as f32 / 255.0;
+            let mut g = buf[i + 1] as f32 / 255.0;
+            let mut b = buf[i + 2] as f32 / 255.0;
+            let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            let sat = 1.14;
+            r = gray + (r - gray) * sat;
+            g = gray + (g - gray) * sat;
+            b = gray + (b - gray) * sat;
+            let k = 1.07;
+            r = (r - 0.5) * k + 0.5;
+            g = (g - 0.5) * k + 0.5;
+            b = (b - 0.5) * k + 0.5;
+            let dx = x as f32 - cx;
+            let dy = y as f32 - cy;
+            let d = (dx * dx + dy * dy).sqrt() / maxd;
+            let vig = 1.0 - d * d * 0.28;
+            r *= vig;
+            g *= vig;
+            b *= vig;
+            buf[i] = (r.clamp(0.0, 1.0) * 255.0) as u8;
+            buf[i + 1] = (g.clamp(0.0, 1.0) * 255.0) as u8;
+            buf[i + 2] = (b.clamp(0.0, 1.0) * 255.0) as u8;
+        }
+    }
+}
+
+/// Full "make it look painted" pipeline for a photo: oil smear -> contour brush
+/// strokes -> canvas texture -> colour + vignette finish.
+fn paint_photo(bytes: &[u8], w: usize, h: usize) -> Vec<u8> {
+    let mut out = oil_filter(bytes, w, h, oil_radius(w, h));
+    brush_pass(&mut out, w, h, 0x9E37_79B9);
+    apply_canvas_texture(&mut out, w, h);
+    tone_and_vignette(&mut out, w, h);
+    out
 }
 
 /// Render one mountain scene into a fresh RGBA8 buffer (`w*h*4` bytes).
@@ -469,9 +559,7 @@ pub fn oil_paint(bytes: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
     if bytes.len() != w * h * 4 {
         return bytes;
     }
-    let mut out = oil_filter(&bytes, w, h, oil_radius(w, h));
-    apply_canvas_texture(&mut out, w, h);
-    out
+    paint_photo(&bytes, w, h)
 }
 
 /// Oil-paint a photo and, if `kick` is set, drop the birthday roundhouse cameo
@@ -485,8 +573,7 @@ pub fn stylize(bytes: Vec<u8>, width: u32, height: u32, kick: bool) -> Vec<u8> {
     if bytes.len() != w * h * 4 {
         return bytes;
     }
-    let mut out = oil_filter(&bytes, w, h, oil_radius(w, h));
-    apply_canvas_texture(&mut out, w, h);
+    let mut out = paint_photo(&bytes, w, h);
     if kick {
         let mut c = Canvas { buf: &mut out, w, h };
         draw_kick(&mut c, w, h);
@@ -525,6 +612,14 @@ mod tests {
         let b = render_rgba(100, 100, 3, false);
         let first = [b[0], b[1], b[2]];
         assert!(b.chunks(4).any(|p| [p[0], p[1], p[2]] != first));
+    }
+
+    #[test]
+    fn paint_photo_preserves_size_and_opacity() {
+        let src = render_rgba(90, 70, 11, false);
+        let out = paint_photo(&src, 90, 70);
+        assert_eq!(out.len(), src.len());
+        assert!(out.iter().skip(3).step_by(4).all(|&a| a == 255));
     }
 
     #[test]
