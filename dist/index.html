@@ -232,39 +232,63 @@
       for (const s of document.querySelectorAll('.scene')) s.hidden = (s.id !== id);
     }
 
-    // Oil-paint the current photo, then reveal it dab-by-dab so it looks painted.
+    // Oil-paint the photo, then build it up on a blank canvas with brush
+    // strokes over ~5s so it looks like it is being painted in front of you.
     function paintReveal() {
       if (!base) return;
       const bytes = stylize(new Uint8Array(base), W, H, false);
       paintCv.width = W; paintCv.height = H;
       paintCtx.putImageData(new ImageData(new Uint8ClampedArray(bytes), W, H), 0, 0);
-      ctx.putImageData(new ImageData(new Uint8ClampedArray(base), W, H), 0, 0);   // start from the photo
 
-      const dabs = [];
-      const N = Math.max(500, Math.round((W * H) / 850));
-      for (let k = 0; k < N; k++) {
-        dabs.push({ x: Math.random() * W, y: Math.random() * H, r: 16 + Math.random() * 22 });
+      // start from a blank, toned canvas
+      ctx.fillStyle = '#e7ddc6';
+      ctx.fillRect(0, 0, W, H);
+
+      // a jittered grid of brush strokes, shuffled so the image fills in naturally
+      const strokes = [];
+      const step = 14;
+      for (let gy = 0; gy < H + step; gy += step) {
+        for (let gx = 0; gx < W + step; gx += step) {
+          strokes.push({
+            x: gx + (Math.random() - 0.5) * step * 1.3,
+            y: gy + (Math.random() - 0.5) * step * 1.3,
+            len: 12 + Math.random() * 14,
+            wid: 4 + Math.random() * 4,
+            ang: Math.random() * Math.PI,
+          });
+        }
       }
-      const DUR = 2400, start = performance.now();
+      for (let k = strokes.length - 1; k > 0; k--) {
+        const j = Math.floor(Math.random() * (k + 1));
+        const tmp = strokes[k]; strokes[k] = strokes[j]; strokes[j] = tmp;
+      }
+
+      const DUR = 5000, start = performance.now();
       let i = 0;
       animating = true;
       msgEl.textContent = '🎨 painting…';
       uploadBtn.disabled = true;
+
       function frame(now) {
         const t = Math.min(1, (now - start) / DUR);
-        const target = Math.floor(t * dabs.length);
+        const target = Math.floor(t * strokes.length);
         for (; i < target; i++) {
-          const d = dabs[i];
+          const s = strokes[i];
+          const bx = Math.max(0, Math.floor(s.x - s.len));
+          const by = Math.max(0, Math.floor(s.y - s.len));
+          const bw = Math.min(W, Math.ceil(s.x + s.len)) - bx;
+          const bh = Math.min(H, Math.ceil(s.y + s.len)) - by;
+          if (bw <= 0 || bh <= 0) continue;
           ctx.save();
           ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.ellipse(s.x, s.y, s.len, s.wid, s.ang, 0, Math.PI * 2);
           ctx.clip();
-          ctx.drawImage(paintCv, 0, 0);
+          ctx.drawImage(paintCv, bx, by, bw, bh, bx, by, bw, bh);
           ctx.restore();
         }
         if (t < 1) { requestAnimationFrame(frame); }
         else {
-          ctx.drawImage(paintCv, 0, 0);   // fill any gaps
+          ctx.drawImage(paintCv, 0, 0);   // fill any last gaps
           msgEl.textContent = paintedMsg;
           uploadBtn.disabled = false;
           animating = false;
