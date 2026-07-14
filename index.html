@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Happy Birthday, Schnoz 🏔️</title>
-  <link rel="stylesheet" href="./style.css?v=2">
+  <link rel="stylesheet" href="./style.css?v=3">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🏔️</text></svg>">
 </head>
 <body>
@@ -164,6 +164,17 @@
       </div>
       <p class="loadmsg">🥋 handling the old guys first…</p>
       <button id="skip" class="ghost">skip →</button>
+    </section>
+
+    <!-- SCENE 1.5 — the birthday lock -->
+    <section id="scene-lock" class="scene" hidden>
+      <div class="lock-card">
+        <div class="lock-emoji">🔒</div>
+        <h2 class="lock-title">This gift is locked</h2>
+        <p class="lock-sub">It opens on <strong id="lock-date"></strong> — your birthday, Schnoz. 🎂</p>
+        <div class="lock-countdown"><span id="countdown">—</span></div>
+        <p class="lock-hint">come back then and the party starts 🎉</p>
+      </div>
     </section>
 
     <!-- SCENE 2 — the greeting -->
@@ -389,11 +400,40 @@
     const ready = Promise.all([init(), loadPhoto(chosen.src)]);
     ready.catch((e) => console.error(e));
 
-    // scene 1 -> 2 (auto after two kicks, or click/skip)
+    // birthday lock: scene 2 stays sealed until her birthday (client-side gate)
+    const BIRTHDAY = new Date(2026, 6, 22, 0, 0, 0).getTime();  // 22 Jul 2026, local midnight
+    const lockDateEl = document.getElementById('lock-date');
+    if (lockDateEl) {
+      lockDateEl.textContent = new Date(BIRTHDAY).toLocaleDateString(undefined,
+        { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+    function unlocked() { return Date.now() >= BIRTHDAY; }
+    function startCountdown() {
+      const cd = document.getElementById('countdown');
+      let t;
+      function tick() {
+        const diff = BIRTHDAY - Date.now();
+        if (diff <= 0) { clearInterval(t); showScene('scene-greet'); return; }
+        const pad = (n) => String(n).padStart(2, '0');
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor(diff / 3600000) % 24;
+        const m = Math.floor(diff / 60000) % 60;
+        const s = Math.floor(diff / 1000) % 60;
+        cd.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+      }
+      tick();
+      t = setInterval(tick, 1000);
+    }
+
+    // scene 1 -> lock (or straight to greeting once it's her birthday)
     let advanced = false;
-    function toGreeting() { if (advanced) return; advanced = true; showScene('scene-greet'); }
-    document.getElementById('scene-round').addEventListener('click', toGreeting);
-    setTimeout(toGreeting, 3400);
+    function afterRound() {
+      if (advanced) return; advanced = true;
+      if (unlocked()) { showScene('scene-greet'); }
+      else { showScene('scene-lock'); startCountdown(); }
+    }
+    document.getElementById('scene-round').addEventListener('click', afterRound);
+    setTimeout(afterRound, 3400);
 
     // scene 2 -> 3 (paint on demand)
     revealBtn.addEventListener('click', async () => {

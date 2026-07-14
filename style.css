@@ -257,6 +257,39 @@ canvas {
   color: rgba(230, 221, 200, 0.82);
 }
 .paint-sub em { color: var(--gold); font-style: normal; font-weight: 700; }
+
+/* ---- birthday lock screen ---- */
+.lock-card {
+  text-align: center;
+  width: min(94%, 460px);
+  padding: 30px 26px 26px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(201, 162, 75, 0.4);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.lock-emoji { font-size: 56px; line-height: 1; margin-bottom: 6px; animation: bob 3s ease-in-out infinite; }
+.lock-title {
+  font-family: Georgia, "Times New Roman", serif;
+  color: #f1e7d1;
+  font-size: clamp(22px, 5vw, 30px);
+  margin: 4px 0 8px;
+}
+.lock-sub { color: #e8ddc8; font-size: clamp(14px, 2.6vw, 16px); line-height: 1.5; margin: 0 0 18px; }
+.lock-sub strong { color: var(--gold); }
+.lock-countdown {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(22px, 6vw, 34px);
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: inline-block;
+}
+.lock-hint { color: rgba(230, 221, 200, 0.55); font-size: 13px; margin: 14px 0 0; }
 .loadmsg {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
