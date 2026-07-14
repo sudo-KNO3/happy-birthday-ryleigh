@@ -168,11 +168,14 @@
 
     <!-- SCENE 2 — the greeting -->
     <section id="scene-greet" class="scene" hidden>
-      <div class="greet">
-        <p class="eyebrow">Banff · another lap around the sun</p>
-        <h1>Happy Birthday,<br><span>Schnoz!</span></h1>
-        <p class="greet-msg">Now go kick an old guy, out-hike everyone, and absolutely <em>crush</em> your weekend in Banff. 🥋🏔️ P.S. I made you a little machine that turns any photo into an oil painting.</p>
-        <button id="reveal" class="primary big">🎨 Reveal your painting</button>
+      <div class="greet-card">
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <div class="garland" id="garland1" aria-hidden="true"></div>
+        <p class="party-eyebrow">🎉 it's your birthday! 🎉</p>
+        <h1 class="party-title">Happy Birthday,<br><span>Schnoz!</span></h1>
+        <p class="party-msg">Now go kick an old guy, out-hike everyone, and absolutely <em>crush</em> your weekend in Banff! 🥋🏔️<br>P.S. I built you a little machine that turns any photo into an oil painting. 🎨</p>
+        <div class="garland" id="garland2" aria-hidden="true"></div>
+        <button id="reveal" class="primary big party">🎁 Reveal your painting</button>
       </div>
     </section>
 
@@ -343,6 +346,44 @@
     fileInput.addEventListener('change', () => { useFile(fileInput.files[0]); fileInput.value = ''; });
 
     placeEl.textContent = '📍 ' + chosen.name;
+
+    // festive flowers (sky blue + bright pink) and matching confetti
+    (function () {
+      const PINK = '#ff4da6', BLUE = '#5cc6ff';
+      function flower(petal) {
+        let p = '';
+        for (let a = 0; a < 6; a++) {
+          const ang = a / 6 * Math.PI * 2;
+          const px = (20 + Math.cos(ang) * 11).toFixed(1);
+          const py = (20 + Math.sin(ang) * 11).toFixed(1);
+          p += '<circle cx="' + px + '" cy="' + py + '" r="7" fill="' + petal + '"/>';
+        }
+        return '<svg viewBox="0 0 40 40" width="30" height="30" style="margin:0 3px;vertical-align:middle">' +
+               p + '<circle cx="20" cy="20" r="6" fill="#ffd36e"/></svg>';
+      }
+      function garland(el, startBlue) {
+        if (!el) return;
+        let s = '';
+        for (let k = 0; k < 7; k++) s += flower((k % 2 === 0) === startBlue ? BLUE : PINK);
+        el.innerHTML = s;
+      }
+      garland(document.getElementById('garland1'), false);
+      garland(document.getElementById('garland2'), true);
+
+      const c = document.getElementById('confetti');
+      if (c) {
+        const colors = [PINK, BLUE, '#ff7ab8', '#8ad4ff'];
+        for (let k = 0; k < 30; k++) {
+          const i = document.createElement('i');
+          i.style.left = (Math.random() * 100) + '%';
+          i.style.background = colors[k % colors.length];
+          i.style.animationDuration = (3 + Math.random() * 3.5) + 's';
+          i.style.animationDelay = (-Math.random() * 6) + 's';
+          if (k % 3 === 0) i.style.borderRadius = '50%';
+          c.appendChild(i);
+        }
+      }
+    })();
 
     // load WASM + photo in the background while the intro plays
     const ready = Promise.all([init(), loadPhoto(chosen.src)]);
