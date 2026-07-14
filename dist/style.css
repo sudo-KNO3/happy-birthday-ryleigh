@@ -92,13 +92,20 @@ canvas {
   position: absolute;
   inset: clamp(10px, 2.4vw, 20px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #cbd6d0;
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  background: #0c1a24;
+  gap: 12px;
+  background: #f2e9d6;
   border-radius: 3px;
+}
+.kick-anim { width: min(78%, 360px); height: auto; }
+.loadmsg {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: #4a3a22;
+  font-size: 15px;
+  letter-spacing: 0.02em;
 }
 
 /* --- caption + controls --- */
